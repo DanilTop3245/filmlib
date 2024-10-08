@@ -19,10 +19,7 @@ function handlerLoadMore() {
   page += 1;
   serviceMovie(page)
     .then((data) => {
-      elements.list.insertAdjacentHTML(
-        "beforeend",
-        createMarkup(data.results)
-      );
+      elements.list.insertAdjacentHTML("beforeend", createMarkup(data.results));
       if (data.page >= 500) {
         elements.loadMore.classList.add("load-more-hidden");
       }
