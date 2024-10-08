@@ -1,31 +1,28 @@
-// *********** Кнопка "Load More" ***************** \\
+/******************************Infinity Scroll**************************/
 const elements = {
-  loadMore: document.querySelector(".js-load-more"),
   list: document.querySelector(".js-movie-list"),
+  guard: document.querySelector(".js-guard"),
 };
-let page = 1;
 
-elements.loadMore.addEventListener("click", handlerLoadMore);
+const options = {
+  root: null,
+  rootMargin: "300px",
+};
+
+const observer = new IntersectionObserver(handlerLoadMore, options);
+
+let page = 1;
 serviceMovie(page)
   .then((data) => {
     elements.list.insertAdjacentHTML("afterbegin", createMarkup(data.results));
+    
     if (data.page < data.total_pages) {
-      elements.loadMore.classList.remove("load-more-hidden");
+      observer.observe(elements.guard);
     }
   })
   .catch((err) => console.log(err));
 
-function handlerLoadMore() {
-  page += 1;
-  serviceMovie(page)
-    .then((data) => {
-      elements.list.insertAdjacentHTML("beforeend", createMarkup(data.results));
-      if (data.page >= 500) {
-        elements.loadMore.classList.add("load-more-hidden");
-      }
-    })
-    .catch((err) => console.log(err));
-}
+
 
 function serviceMovie(page = 1) {
   const BASE_URL = "https://api.themoviedb.org/3";
@@ -59,3 +56,34 @@ function createMarkup(arr) {
     )
     .join("");
 }
+
+// let counterObserver = 0
+function handlerLoadMore(entries, observer) {
+  // counterObserver += 1;
+  // console.log("counterObserver: ", counterObserver);
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      page += 1;
+      serviceMovie(page)
+        .then((data) => {
+          elements.list.insertAdjacentHTML(
+            "beforeend",
+            createMarkup(data.results)
+          );
+
+          if (data.page >= 500) {
+            observer.unobserve(elements.guard)
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  });
+}
+
+// document.addEventListener('scroll', handlerScroll)
+
+// let counterScroll = 0
+// function handlerScroll() {
+//   counterScroll += 1
+//   console.log("counterScroll: ", counterScroll);
+// }
